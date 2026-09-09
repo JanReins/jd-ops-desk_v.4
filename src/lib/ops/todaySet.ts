@@ -170,7 +170,11 @@ export function priorPeriodOpen(
 ): Obligation[] {
   const period = currentPeriod || getMelbourneCurrentPeriod();
   return obligations.filter(
-    (o) => isOpenStatus(o.status) && Boolean(o.periodStart) && o.periodStart < period,
+    (o) =>
+      isOpenStatus(o.status) &&
+      Boolean(o.periodStart) &&
+      o.periodStart < period &&
+      o.workstream !== "metka_bas",
   );
 }
 

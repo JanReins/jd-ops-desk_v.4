@@ -6,6 +6,7 @@ import {
   getBacklog,
   getCourt,
   getDueNotOnPlan,
+  priorPeriodOpen,
 } from "./todaySet.ts";
 
 test("getCourt classifies Ready to lodge as mine", () => {
@@ -95,4 +96,36 @@ test("clientMonthLoad counts the Metka pack as one sitting, not 36 cells", () =>
   assert.equal(load.open, 1);
   assert.equal(load.teamOpen, 1);
   assert.equal(load.minutes, 20);
+});
+
+test("priorPeriodOpen excludes Metka pack cells from prior periods", () => {
+  const items = [
+    ob({
+      id: "prior-metka-1",
+      workstream: "metka_bas",
+      periodStart: "2026-08-01",
+      status: "Not started",
+    }),
+    ob({
+      id: "prior-metka-2",
+      workstream: "metka_bas",
+      periodStart: "2026-08-01",
+      status: "In progress",
+    }),
+    ob({
+      id: "prior-standard",
+      workstream: "bas_ias",
+      periodStart: "2026-08-01",
+      status: "Not started",
+    }),
+    ob({
+      id: "current-standard",
+      workstream: "bas_ias",
+      periodStart: "2026-09-01",
+      status: "Not started",
+    }),
+  ];
+  const prior = priorPeriodOpen(items, "2026-09-01");
+  assert.equal(prior.length, 1);
+  assert.equal(prior[0].id, "prior-standard");
 });

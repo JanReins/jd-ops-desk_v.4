@@ -142,7 +142,7 @@ export function PipelineScreen({
   const openByPeriod = useMemo(() => {
     const counts = new Map<string, number>();
     obligations.forEach((o) => {
-      if (o.periodStart && isOpenStatus(o.status)) {
+      if (o.periodStart && isOpenStatus(o.status) && o.workstream !== "metka_bas") {
         counts.set(o.periodStart, (counts.get(o.periodStart) || 0) + 1);
       }
     });
