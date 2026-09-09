@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseSnapshot } from "./snapshot.ts";
+import { parseSnapshot, exportSnapshot, checkSnapshotOrphans, stripSnapshotOrphans } from "./snapshot.ts";
 import type { Client, Obligation, PersonalTask, RecurringTemplate } from "./types.ts";
 
 const client: Client = {
@@ -108,4 +108,94 @@ test("parseSnapshot rejects unknown versions", () => {
     obligations: [],
   });
   assert.throws(() => parseSnapshot(raw), /Unsupported snapshot version/);
+});
+
+test("exportSnapshot and parseSnapshot v2 round-trip includes personalTasks and templates", async () => {
+  const blob = exportSnapshot([client], [obligation], {
+    email: "Jan",
+    personalTasks: [personal],
+    templates: [template],
+  });
+  const text = await blob.text();
+  const snap = parseSnapshot(text);
+
+  assert.equal(snap.version, 2);
+  assert.equal(snap.clients.length, 1);
+  assert.equal(snap.obligations.length, 1);
+  assert.equal(snap.personalTasks?.length, 1);
+  assert.equal(snap.personalTasks?.[0].id, "pt-1");
+  assert.equal(snap.templates?.length, 1);
+  assert.equal(snap.templates?.[0].id, "tpl-1");
+});
+
+test("v1 snapshot omits personalTasks and templates, defaulting to empty arrays", () => {
+  const raw = JSON.stringify({
+    version: 1,
+    kind: "ops-desk-snapshot",
+    exportedAt: "2026-09-01T00:00:00.000Z",
+    email: "Jan",
+    clients: [client],
+    obligations: [obligation],
+  });
+  const snap = parseSnapshot(raw);
+  assert.equal(snap.personalTasks, undefined);
+  assert.equal(snap.templates, undefined);
+
+  // Semantics for apply: omitted arrays resolve to []
+  assert.deepEqual(snap.personalTasks ?? [], []);
+  assert.deepEqual(snap.templates ?? [], []);
+});
+
+test("exportSnapshot handles empty personalTasks and templates arrays", async () => {
+  const blob = exportSnapshot([client], [obligation], {
+    email: "Jan",
+    personalTasks: [],
+    templates: [],
+  });
+  const text = await blob.text();
+  const snap = parseSnapshot(text);
+
+  assert.deepEqual(snap.personalTasks, []);
+  assert.deepEqual(snap.templates, []);
+});
+
+test("checkSnapshotOrphans and stripSnapshotOrphans identify and remove orphan obligations", () => {
+  const orphanObligation: Obligation = {
+    id: "ob-orphan",
+    clientId: "client-missing",
+    workstream: "bas_ias",
+    periodStart: "2026-09-01",
+    dueDate: "2026-10-21",
+    status: "Not started",
+    owner: "Jan",
+    reviewer: "",
+    priority: "P2",
+    nextAction: "",
+    blocker: "",
+    waitingOn: "",
+    recurring: false,
+  };
+
+  const rawSnapshot = {
+    version: 2 as const,
+    kind: "ops-desk-snapshot" as const,
+    exportedAt: "2026-09-09T00:00:00.000Z",
+    email: "Jan",
+    clients: [client],
+    obligations: [obligation, orphanObligation],
+    personalTasks: [personal],
+    templates: [template],
+  };
+
+  const orphans = checkSnapshotOrphans(rawSnapshot);
+  assert.equal(orphans.orphanCount, 1);
+  assert.deepEqual(orphans.orphanIds, ["ob-orphan"]);
+
+  const clean = stripSnapshotOrphans(rawSnapshot);
+  assert.equal(clean.obligations.length, 1);
+  assert.equal(clean.obligations[0].id, "ob-1");
+
+  const postCheck = checkSnapshotOrphans(clean);
+  assert.equal(postCheck.orphanCount, 0);
+  assert.deepEqual(postCheck.orphanIds, []);
 });
