@@ -6,6 +6,7 @@ import {
   getBacklog,
   getCourt,
   getDueNotOnPlan,
+  isLedgerOpenObligation,
   priorPeriodOpen,
 } from "./todaySet.ts";
 
@@ -98,6 +99,13 @@ test("clientMonthLoad counts the Metka pack as one sitting, not 36 cells", () =>
   assert.equal(load.minutes, 20);
 });
 
+test("isLedgerOpenObligation returns true for open non-Metka obligations and false for Done/Not applicable or Metka", () => {
+  assert.equal(isLedgerOpenObligation(ob({ id: "1", workstream: "bas_ias", status: "Not started" })), true);
+  assert.equal(isLedgerOpenObligation(ob({ id: "2", workstream: "bas_ias", status: "Done" })), false);
+  assert.equal(isLedgerOpenObligation(ob({ id: "3", workstream: "bas_ias", status: "Not applicable" })), false);
+  assert.equal(isLedgerOpenObligation(ob({ id: "4", workstream: "metka_bas", status: "Not started" })), false);
+});
+
 test("priorPeriodOpen excludes Metka pack cells from prior periods", () => {
   const items = [
     ob({
@@ -128,4 +136,9 @@ test("priorPeriodOpen excludes Metka pack cells from prior periods", () => {
   const prior = priorPeriodOpen(items, "2026-09-01");
   assert.equal(prior.length, 1);
   assert.equal(prior[0].id, "prior-standard");
+
+  const priorLens = items.filter(
+    (o) => isLedgerOpenObligation(o) && Boolean(o.periodStart) && o.periodStart < "2026-09-01",
+  );
+  assert.deepEqual(priorLens, prior);
 });

@@ -12,6 +12,11 @@ export function isOpenStatus(status: Obligation["status"]): boolean {
   return status !== "Done" && status !== "Not applicable";
 }
 
+/** Open non-Metka obligation predicate for master ledger / pipeline badge counting. */
+export function isLedgerOpenObligation(o: Obligation): boolean {
+  return isOpenStatus(o.status) && o.workstream !== "metka_bas";
+}
+
 export type Court = "mine" | "theirs" | "done";
 
 /** Work I can do now vs work I am watching. */
@@ -171,10 +176,9 @@ export function priorPeriodOpen(
   const period = currentPeriod || getMelbourneCurrentPeriod();
   return obligations.filter(
     (o) =>
-      isOpenStatus(o.status) &&
+      isLedgerOpenObligation(o) &&
       Boolean(o.periodStart) &&
-      o.periodStart < period &&
-      o.workstream !== "metka_bas",
+      o.periodStart < period,
   );
 }
 
