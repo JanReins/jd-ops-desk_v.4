@@ -48,9 +48,7 @@ function alreadyExists(
   return existing.some((o) => {
     if (o.clientId !== clientId || o.workstream !== workstream) return false;
     if (entityName) return o.periodStart === periodStart && o.entityName === entityName;
-    if (weekCode) {
-      return o.weekCode === weekCode || (o.periodStart === periodStart && o.weekCode === weekCode);
-    }
+    if (weekCode) return o.periodStart === periodStart && o.weekCode === weekCode;
     return o.periodStart === periodStart && (o.taskLabel === taskLabel || o.nextAction === taskLabel);
   });
 }
