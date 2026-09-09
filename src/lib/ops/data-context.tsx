@@ -152,10 +152,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refreshData = useCallback(async () => {
-    const [loadedClients, loadedObligations, loadedPersonal] = await Promise.all([
+    const [loadedClients, loadedObligations, loadedPersonal, loadedTemplates] = await Promise.all([
       getAllClients(UID),
       getAllObligations(UID),
       getMeta<PersonalTask[]>(PERSONAL_KEY),
+      getMeta<RecurringTemplate[]>(TEMPLATES_KEY),
     ]);
     setClients(loadedClients.sort((a, b) => a.name.localeCompare(b.name)));
     setObligations(loadedObligations.sort((a, b) => (a.order || 0) - (b.order || 0)));
@@ -164,6 +165,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         (a, b) => a.order - b.order,
       ),
     );
+    setTemplates(loadedTemplates !== null && loadedTemplates !== undefined ? loadedTemplates : []);
   }, []);
 
   useEffect(() => {
@@ -490,13 +492,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       await applySnapshot(UID, snapshot);
       await setMeta(SEED_VERSION_KEY, SEED_VERSION);
-      if (snapshot.personalTasks) {
-        await setMeta(PERSONAL_KEY, snapshot.personalTasks);
-      }
-      if (snapshot.templates) {
-        await setMeta(TEMPLATES_KEY, snapshot.templates);
-        setTemplates(snapshot.templates);
-      }
       const exportStamp =
         typeof snapshot.exportedAt === "string" && snapshot.exportedAt
           ? snapshot.exportedAt

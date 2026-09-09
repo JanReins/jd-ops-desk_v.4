@@ -1,5 +1,5 @@
 import type { Client, Obligation, PersonalTask, RecurringTemplate } from "./types.ts";
-import { replaceUserData } from "./idb.ts";
+import { replaceUserData, setMeta } from "./idb.ts";
 
 export interface SnapshotData {
   version: 1 | 2;
@@ -98,6 +98,18 @@ export function checkSnapshotOrphans(snapshot: SnapshotData): {
   };
 }
 
+export function stripSnapshotOrphans(snapshot: SnapshotData): SnapshotData {
+  const clientIds = new Set(snapshot.clients.map((c) => c.id));
+  const cleanObligations = snapshot.obligations.filter((ob) => clientIds.has(ob.clientId));
+  return {
+    ...snapshot,
+    obligations: cleanObligations,
+  };
+}
+
 export async function applySnapshot(uid: string, snapshot: SnapshotData): Promise<void> {
-  await replaceUserData(uid, snapshot.clients, snapshot.obligations);
+  const cleanSnapshot = stripSnapshotOrphans(snapshot);
+  await replaceUserData(uid, cleanSnapshot.clients, cleanSnapshot.obligations);
+  await setMeta(`personalTasks:${uid}`, cleanSnapshot.personalTasks ?? []);
+  await setMeta(`templates:${uid}`, cleanSnapshot.templates ?? []);
 }
