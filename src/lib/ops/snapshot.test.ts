@@ -174,6 +174,7 @@ test("checkSnapshotOrphans and stripSnapshotOrphans identify and remove orphan o
     blocker: "",
     waitingOn: "",
     recurring: false,
+    order: 1,
   };
 
   const rawSnapshot = {
