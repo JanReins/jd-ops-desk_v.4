@@ -1,5 +1,5 @@
-import type { Obligation, ObligationStatus } from "./types";
-import { getCourt, isOpenStatus } from "./todaySet";
+import type { Obligation, ObligationStatus } from "./types.ts";
+import { getCourt, isOpenStatus } from "./todaySet.ts";
 
 export const METKA_CLIENT_ID = "client-metka";
 
