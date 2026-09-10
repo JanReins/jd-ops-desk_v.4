@@ -34,8 +34,9 @@ function sampleClient(overrides?: Partial<Client>): Client {
     };
 }
 
-function sampleObligation(overrides?: Partial<Obligation> & Pick<Obligation, "id">): Obligation {
+function sampleObligation(overrides?: Partial<Obligation>): Obligation {
     return {
+          id: "ob-sample",
           clientId: "c-1",
           workstream: "supplier_payments",
           periodStart: "2026-08-01",
@@ -113,7 +114,7 @@ test("bookkeeping month-prefixed weekCode dedupes correctly within same period",
 });
 
 test("Metka entityName deduplication remains unchanged within period", () => {
-    const metkaClient: Client = {
+    const metkaClient: Client = sampleClient({
           id: METKA_CLIENT_ID,
           name: "Metka Group",
           shortName: "Metka",
@@ -131,7 +132,7 @@ test("Metka entityName deduplication remains unchanged within period", () => {
                   payrollTax: false,
                   stp: false,
           },
-    };
+    });
 
        const existing: Obligation[] = [
              sampleObligation({

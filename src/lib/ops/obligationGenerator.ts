@@ -1,4 +1,4 @@
-import type { Client, Obligation, Workstream } from "./types";
+import type { Client, Obligation, Workstream } from "./types.ts";
 import {
   clampDate,
   getLastFridayOfMonth,
@@ -8,10 +8,10 @@ import {
   getWeeksForPeriod,
   weekContainingDate,
   type MonthWeek,
-} from "./dates";
-import { isOpenStatus } from "./todaySet";
-import { METKA_CLIENT_ID, METKA_ENTITIES, isMetkaClient } from "./metka";
-import { formatPeriod } from "./types";
+} from "./dates.ts";
+import { isOpenStatus } from "./todaySet.ts";
+import { METKA_CLIENT_ID, METKA_ENTITIES, isMetkaClient } from "./metka.ts";
+import { formatPeriod } from "./types.ts";
 
 export interface CandidateObligation {
   clientId: string;
