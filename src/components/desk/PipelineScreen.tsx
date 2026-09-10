@@ -21,7 +21,7 @@ import {
   listMonthPeriods,
 } from '@/lib/ops/dates';
 import { generateNextMonthCandidates, generateRollingHorizon, CandidateObligation } from '@/lib/ops/obligationGenerator';
-import { isOpenStatus, isTodayObligation, getCourt, priorPeriodOpen, isOverdueOpen } from '@/lib/ops/todaySet';
+import { isOpenStatus, isLedgerOpenObligation, isTodayObligation, getCourt, priorPeriodOpen, isOverdueOpen } from '@/lib/ops/todaySet';
 import {
   Search,
   CalendarPlus,
@@ -142,7 +142,7 @@ export function PipelineScreen({
   const openByPeriod = useMemo(() => {
     const counts = new Map<string, number>();
     obligations.forEach((o) => {
-      if (o.periodStart && isOpenStatus(o.status) && o.workstream !== "metka_bas") {
+      if (o.periodStart && isLedgerOpenObligation(o)) {
         counts.set(o.periodStart, (counts.get(o.periodStart) || 0) + 1);
       }
     });
@@ -196,7 +196,7 @@ export function PipelineScreen({
       }
       if (
         ledgerLens === "prior" &&
-        !(isOpenStatus(ob.status) && ob.periodStart && ob.periodStart < melbourneCurrentPeriod)
+        !(isLedgerOpenObligation(ob) && ob.periodStart && ob.periodStart < melbourneCurrentPeriod)
       ) {
         return false;
       }
