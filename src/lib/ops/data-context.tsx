@@ -498,6 +498,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           : new Date().toISOString();
       await setMeta(LAST_EXPORT_KEY, exportStamp);
       setLastExportAt(exportStamp);
+      setLastClosedDate(null);
       await refreshData();
     } catch (err: unknown) {
       console.error("Error applying snapshot in IDB:", err);

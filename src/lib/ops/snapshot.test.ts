@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseSnapshot, exportSnapshot, checkSnapshotOrphans, stripSnapshotOrphans } from "./snapshot.ts";
+import { getUserMetaKeys } from "./idb.ts";
 import type { Client, Obligation, PersonalTask, RecurringTemplate } from "./types.ts";
 
 const client: Client = {
@@ -199,4 +200,17 @@ test("checkSnapshotOrphans and stripSnapshotOrphans identify and remove orphan o
   const postCheck = checkSnapshotOrphans(clean);
   assert.equal(postCheck.orphanCount, 0);
   assert.deepEqual(postCheck.orphanIds, []);
+});
+
+test("getUserMetaKeys enumerates all per-uid meta keys", () => {
+  const keys = getUserMetaKeys("test-user");
+  assert.deepEqual(keys, [
+    "seededAt:test-user",
+    "personalTasks:test-user",
+    "seedVersion:test-user",
+    "lastClosedDate:test-user",
+    "templates:test-user",
+    "metkaPackV1:test-user",
+    "lastExport:test-user",
+  ]);
 });

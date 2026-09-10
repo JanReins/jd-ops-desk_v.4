@@ -185,6 +185,18 @@ export async function batchPutObligations(obligations: Obligation[]): Promise<vo
   });
 }
 
+export function getUserMetaKeys(uid: string): string[] {
+  return [
+    `seededAt:${uid}`,
+    `personalTasks:${uid}`,
+    `seedVersion:${uid}`,
+    `lastClosedDate:${uid}`,
+    `templates:${uid}`,
+    `metkaPackV1:${uid}`,
+    `lastExport:${uid}`,
+  ];
+}
+
 export async function clearUserData(uid: string): Promise<void> {
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
@@ -193,7 +205,9 @@ export async function clearUserData(uid: string): Promise<void> {
     const clientsStore = tx.objectStore("clients");
     const obligationsStore = tx.objectStore("obligations");
 
-    metaStore.delete(`seededAt:${uid}`);
+    for (const key of getUserMetaKeys(uid)) {
+      metaStore.delete(key);
+    }
 
     const clientsReq = clientsStore.openCursor();
     clientsReq.onsuccess = (event) => {

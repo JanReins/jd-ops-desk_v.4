@@ -112,4 +112,5 @@ export async function applySnapshot(uid: string, snapshot: SnapshotData): Promis
   await replaceUserData(uid, cleanSnapshot.clients, cleanSnapshot.obligations);
   await setMeta(`personalTasks:${uid}`, cleanSnapshot.personalTasks ?? []);
   await setMeta(`templates:${uid}`, cleanSnapshot.templates ?? []);
+  await setMeta(`lastClosedDate:${uid}`, null);
 }
